@@ -1,0 +1,27 @@
+# Environment / secrets
+.env
+.env.local
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+backend/venv/
+backend/*.db
+backend/uploads/
+backend/data/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Unrelated stray files
+breaches/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
