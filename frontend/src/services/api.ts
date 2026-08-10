@@ -5,8 +5,10 @@ import type {
   ProgressOverview, UploadedDocument
 } from '@/types'
 
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || ''
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${API_BASE}/api`,
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 })
@@ -28,7 +30,7 @@ api.interceptors.response.use(
       const refreshToken = useAuthStore.getState().refreshToken
       if (refreshToken) {
         try {
-          const res = await axios.post('/api/auth/refresh', { refresh_token: refreshToken })
+          const res = await axios.post(`${API_BASE}/api/auth/refresh`, { refresh_token: refreshToken })
           const { access_token } = res.data
           useAuthStore.getState().setAuth(
             useAuthStore.getState().user!,

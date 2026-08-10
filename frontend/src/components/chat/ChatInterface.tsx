@@ -8,7 +8,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { useChatStore, useAuthStore, useUIStore } from '@/store'
-import { chatAPI, notesAPI } from '@/services/api'
+import { chatAPI, notesAPI, API_BASE } from '@/services/api'
 import ChatMessage, { BotAvatar } from './ChatMessage'
 import ChatToolbar from './ChatToolbar'
 import WelcomeScreen from './WelcomeScreen'
@@ -105,7 +105,7 @@ export default function ChatInterface() {
     abortRef.current = new AbortController()
 
     try {
-      const response = await fetch('/api/chat/send', {
+      const response = await fetch(`${API_BASE}/api/chat/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
