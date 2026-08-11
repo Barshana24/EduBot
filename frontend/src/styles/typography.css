@@ -1,0 +1,61 @@
+/* ═══════════════════════════════════════════════════════════
+   Type: rounded and friendly. Four sizes, nothing clever.
+   ═══════════════════════════════════════════════════════════ */
+
+.t-huge {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.t-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.6vw, 2rem);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.t-head {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.t-body {
+  font-family: var(--font-body);
+  font-size: 0.975rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.t-small {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+/* Section captions and stat labels. */
+.t-cap {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Big friendly numbers — XP, scores, streaks. */
+.t-num {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}

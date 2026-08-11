@@ -9,6 +9,7 @@ from app.core.security import (
     hash_password, verify_password, create_access_token, create_refresh_token, decode_token, get_current_user_id
 )
 from app.models.user import User
+from app.services.streak_service import credit_daily_login
 
 router = APIRouter()
 
@@ -76,6 +77,8 @@ def _user_response(user: User) -> dict:
         "total_messages": user.total_messages,
         "quizzes_completed": user.quizzes_completed,
         "streak_days": user.streak_days,
+        "login_days": user.login_days or 0,
+        "longest_streak": user.longest_streak or 0,
         "created_at": user.created_at.isoformat() if user.created_at else None,
     }
 
@@ -97,6 +100,9 @@ async def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
+    # Day one counts as a login, so a new account starts on a 1-day streak.
+    daily = credit_daily_login(db, user)
+
     access_token = create_access_token({"sub": str(user.id)})
     refresh_token = create_refresh_token({"sub": str(user.id)})
 
@@ -105,6 +111,7 @@ async def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         "refresh_token": refresh_token,
         "token_type": "bearer",
         "user": _user_response(user),
+        "daily": daily,
     }
 
 
@@ -116,6 +123,8 @@ async def login(payload: LoginRequest, db: Session = Depends(get_db)):
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account deactivated")
 
+    daily = credit_daily_login(db, user)
+
     access_token = create_access_token({"sub": str(user.id)})
     refresh_token = create_refresh_token({"sub": str(user.id)})
 
@@ -124,6 +133,7 @@ async def login(payload: LoginRequest, db: Session = Depends(get_db)):
         "refresh_token": refresh_token,
         "token_type": "bearer",
         "user": _user_response(user),
+        "daily": daily,
     }
 
 
@@ -148,6 +158,20 @@ async def get_me(user_id: int = Depends(get_current_user_id), db: Session = Depe
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return _user_response(user)
+
+
+@router.post("/daily")
+async def claim_daily(user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    """
+    Credit today's login. Called once when the app opens, so someone who
+    never signs out still earns their streak the next day. Idempotent —
+    calling it repeatedly on the same day awards nothing.
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    daily = credit_daily_login(db, user)
+    return {**daily, "user": _user_response(user)}
 
 
 @router.put("/profile")

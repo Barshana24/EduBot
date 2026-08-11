@@ -1,0 +1,125 @@
+/* ═══════════════════════════════════════════════════════════
+   EduBot — bright, chunky, game-like.
+   One strong brand colour; everything else is state.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Ground ─────────────────────────────────────────── */
+  --bg:        #F5F6FC;
+  --card:      #FFFFFF;
+  --card-soft: #FAFAFE;
+
+  /* ── Ink ──────────────────────────────────────────────
+     --ink-faint carries small caption text, so it has to clear
+     4.5:1 on white. Anything lighter looks nicer and fails. */
+  --ink:       #221F38;
+  --ink-soft:  #565372;
+  --ink-faint: #6B6884;
+
+  /* ── Lines ──────────────────────────────────────────── */
+  --line:        #E7E6F2;
+  --line-strong: #D3D1E6;
+
+  /* ── Brand: the one strong happy colour ───────────────
+     --brand is the fill and is dark enough to carry white text.
+     --brand-text is for brand-coloured *text* on light grounds,
+     which needs to be darker still. */
+  --brand:      #7450F0;
+  --brand-dark: #5734C9;
+  --brand-soft: #EFEBFF;
+  --brand-text: #5734C9;
+  --brand-ink:  #FFFFFF;
+
+  /* Mint, coral, sun and sky are all too light to carry white
+     text or glyphs. Everything sitting on them uses ink. */
+  --on-accent: #221F38;
+
+  /* The accents above are fill colours. As *text* on a light ground they
+     land around 2:1, so each has a darkened twin for that job. Use the
+     plain colour for shapes and icons, the -text twin for words. */
+  --mint-text:  #0F7A55;
+  --coral-text: #C7342A;
+  --sun-text:   #8A5A00;
+  --sky-text:   #0B7BA8;
+
+  /* ── State colours. Used only to mean something. ────── */
+  --mint:      #1FC28A;
+  --mint-dark: #169166;
+  --mint-soft: #DFF7EE;
+
+  --coral:      #FF6257;
+  --coral-dark: #D93B32;
+  --coral-soft: #FFE7E5;
+
+  --sun:      #FFB020;
+  --sun-dark: #DB8B00;
+  --sun-soft: #FFF2D6;
+
+  --sky:      #35B6F5;
+  --sky-dark: #1C8FC7;
+  --sky-soft: #E0F4FE;
+
+  /* ── Chunky depth ───────────────────────────────────────
+     The "solid underside" is what makes a control feel like a
+     physical button instead of a flat rectangle. */
+  --lift: 4px;
+  --shadow-card:  0 2px 0 var(--line-strong);
+  --shadow-float: 0 8px 24px -10px rgba(34, 31, 56, 0.22);
+  --shadow-pop:   0 14px 34px -12px rgba(124, 92, 252, 0.45);
+
+  /* ── Radius: generous, never sharp ──────────────────── */
+  --r-sm:   12px;
+  --r-md:   18px;
+  --r-lg:   24px;
+  --r-xl:   32px;
+  --r-full: 999px;
+
+  /* ── Type ───────────────────────────────────────────── */
+  --font-display: 'Fredoka', system-ui, sans-serif;
+  --font-body:    'Nunito', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  /* ── Space ──────────────────────────────────────────── */
+  --gutter: clamp(1rem, 4vw, 2rem);
+  --hud-top: 4.5rem;      /* persistent XP + streak bar */
+  --tabs-bottom: 5rem;    /* bottom tab bar */
+
+  /* ── Motion ─────────────────────────────────────────── */
+  --ease-out:  cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-bump: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --dur-fast: 150ms;
+  --dur-base: 280ms;
+
+  color-scheme: light;
+}
+
+/* Dark stays chunky and friendly; it is not a different product. */
+:root.dark {
+  --bg:        #17152A;
+  --card:      #221F3B;
+  --card-soft: #2A2747;
+
+  --ink:       #F4F3FB;
+  --ink-soft:  #ADA9C7;
+  --ink-faint: #9793B4;
+
+  --line:        #322E52;
+  --line-strong: #423D69;
+
+  --brand-soft: #2E2557;
+  /* Inverted on dark: accent text has to get lighter, not darker. */
+  --brand-text: #B9A8FF;
+  --mint-text:  #5FE0B0;
+  --coral-text: #FF9A91;
+  --sun-text:   #FFD27A;
+  --sky-text:   #7FD4FF;
+  --mint-soft:  #16332B;
+  --coral-soft: #3A2029;
+  --sun-soft:   #3A2E17;
+  --sky-soft:   #14293A;
+
+  --shadow-card:  0 2px 0 var(--line-strong);
+  --shadow-float: 0 8px 24px -10px rgba(0, 0, 0, 0.55);
+
+  color-scheme: dark;
+}

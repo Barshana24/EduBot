@@ -1,0 +1,92 @@
+/* ═══════════════════════════════════════════════════════════
+   Motion — celebratory but short. Nothing loops forever
+   except the mascot's idle breathing.
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+@keyframes pop {
+  0%   { transform: scale(0.85); opacity: 0; }
+  60%  { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100%     { transform: translateX(0); }
+  20%, 60%     { transform: translateX(-7px); }
+  40%, 80%     { transform: translateX(7px); }
+}
+
+@keyframes shine {
+  from { transform: translateX(-120%); }
+  to   { transform: translateX(320%); }
+}
+
+.anim-bob   { animation: bob 3.2s ease-in-out infinite; }
+.anim-pop   { animation: pop 0.42s var(--ease-bump); }
+.anim-shake { animation: shake 0.42s ease-in-out; }
+
+/* A light sweep across a filled progress bar, so progress feels alive. */
+.bar-shine { position: relative; overflow: hidden; }
+.bar-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 34%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: shine 2.6s ease-in-out infinite;
+}
+
+/* ── Backdrop ───────────────────────────────────────────────
+   Soft colour blobs drifting behind everything, plus a few small
+   shapes rising like bubbles. Transform and opacity only, so the
+   compositor handles it and the main thread stays free.
+   ─────────────────────────────────────────────────────────── */
+
+@keyframes float-up {
+  0%   { transform: translateY(12vh) rotate(0deg); opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translateY(-108vh) rotate(220deg); opacity: 0; }
+}
+
+/* One painted layer of soft radial gradients. Deliberately static.
+   Two earlier versions were measured and thrown away: four
+   `filter: blur(70px)` circles ran at 8fps, and animating this layer's
+   transform forced the masked dot pattern beside it to re-rasterise
+   every frame, costing 10fps. Painted once, it is free. The motion in
+   the backdrop comes from the floating shapes, which are cheap. */
+.wash {
+  position: absolute;
+  inset: 0;
+}
+
+.floaty {
+  position: absolute;
+  will-change: transform;
+  animation: float-up linear infinite;
+}
+
+/* Faint dotted paper, faded out toward the edges.
+   Promoted to its own layer so the animating wash beside it cannot force
+   this masked pattern to re-rasterise every frame. */
+.dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--line-strong) 1.5px, transparent 1.5px);
+  background-size: 30px 30px;
+  opacity: 0.4;
+  mask-image: radial-gradient(ellipse 80% 65% at 50% 45%, #000 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 65% at 50% 45%, #000 30%, transparent 80%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-bob, .anim-pop, .anim-shake { animation: none; }
+  .bar-shine::after { display: none; }
+  /* Rising is the whole point of the bubbles, so they simply go away.
+     The static colour wash and dots stay, since they never moved. */
+  .floaty { display: none; }
+}

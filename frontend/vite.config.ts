@@ -10,11 +10,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon-192.png', 'icon-512.png', 'icon-180.png'],
       manifest: {
-        name: 'EduBot — AI Engineering Tutor',
+        name: 'EduBot — Your AI study buddy',
         short_name: 'EduBot',
-        description: 'An AI engineering tutor that teaches in your language.',
-        theme_color: '#E0A85C',
-        background_color: '#F5EDDC',
+        description: 'Learn engineering with Bo, your AI study buddy.',
+        theme_color: '#7C5CFC',
+        background_color: '#F5F6FC',
         display: 'standalone',
         start_url: '/chat',
         scope: '/',
@@ -39,6 +39,20 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        // Split the heavy, rarely-changing libraries so a code edit doesn't
+        // invalidate them, and so markdown/math only loads with a transcript.
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          motion: ['framer-motion'],
+          markdown: ['react-markdown', 'remark-gfm', 'remark-math', 'rehype-katex', 'katex'],
+          data: ['@tanstack/react-query', 'axios', 'zustand'],
+        },
+      },
     },
   },
   server: {

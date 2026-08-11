@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useAuthStore } from '@/store'
 import type {
   User, ChatSession, Message, Quiz, FlashCard,
-  ProgressOverview, UploadedDocument
+  ProgressOverview, UploadedDocument, DailyReward, LearningResource
 } from '@/types'
 
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || ''
@@ -50,10 +50,12 @@ api.interceptors.response.use(
 
 export const authAPI = {
   register: (data: { email: string; username: string; password: string; full_name?: string }) =>
-    api.post<{ access_token: string; refresh_token: string; user: User }>('/auth/register', data),
+    api.post<{ access_token: string; refresh_token: string; user: User; daily: DailyReward }>('/auth/register', data),
   login: (data: { email: string; password: string }) =>
-    api.post<{ access_token: string; refresh_token: string; user: User }>('/auth/login', data),
+    api.post<{ access_token: string; refresh_token: string; user: User; daily: DailyReward }>('/auth/login', data),
   me: () => api.get<User>('/auth/me'),
+  /** Credits today's login. Idempotent — safe to call on every app open. */
+  claimDaily: () => api.post<DailyReward & { user: User }>('/auth/daily'),
   updateProfile: (data: Partial<User>) => api.put<User>('/auth/profile', data),
   changePassword: (data: { current_password: string; new_password: string }) =>
     api.put('/auth/change-password', data),
@@ -124,6 +126,14 @@ export const uploadAPI = {
 export const progressAPI = {
   overview: () => api.get<ProgressOverview>('/progress/overview'),
   subjects: () => api.get('/progress/subjects'),
+}
+
+export const resourcesAPI = {
+  /** `topic` accepts a raw question; the server reduces it to a search phrase. */
+  forTopic: (topic: string, subject?: string | null, limit = 6) =>
+    api.get<{ topic: string; subject: string | null; resources: LearningResource[] }>('/resources', {
+      params: { topic, subject: subject || undefined, limit },
+    }),
 }
 
 export default api

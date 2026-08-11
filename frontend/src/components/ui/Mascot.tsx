@@ -1,85 +1,119 @@
 import { motion } from 'framer-motion'
+import { C } from '@/lib/design'
+
+export type Mood = 'idle' | 'happy' | 'thinking' | 'oops' | 'proud'
 
 interface Props {
-  size?: number
-  mood?: 'happy' | 'thinking' | 'celebrating'
+  /** A number in px, or a CSS length so a parent can size it responsively. */
+  size?: number | string
+  mood?: Mood
+  /** Turn off the idle breathing when the mascot is a small static avatar. */
+  still?: boolean
   className?: string
 }
 
 /**
- * EduBot's mascot: a small round tutor-bot who carries a book everywhere.
- * One consistent character used at every size — see Logo.tsx for the
- * cropped face-only version used in tight spaces (nav, avatars).
+ * Bo, the study buddy. A rounded robot head built from plain SVG so it
+ * scales anywhere and costs nothing to ship. The mood prop drives the
+ * eyes, mouth and posture, which is how the app reacts to the student.
  */
-export default function Mascot({ size = 96, mood = 'happy', className = '' }: Props) {
-  const bounce = mood === 'celebrating'
+export default function Mascot({ size = 96, mood = 'idle', still = false, className }: Props) {
+  const bodyColour =
+    mood === 'happy' || mood === 'proud' ? C.mint
+    : mood === 'oops' ? C.coral
+    : C.brand
+
+  // Eyes: open by default, curved-shut when delighted, narrowed when thinking.
+  const eye = (cx: number) => {
+    if (mood === 'happy' || mood === 'proud') {
+      return (
+        <path
+          key={cx}
+          d={`M ${cx - 7} 46 q 7 -8 14 0`}
+          stroke={C.ink} strokeWidth={4} strokeLinecap="round" fill="none"
+        />
+      )
+    }
+    if (mood === 'thinking') {
+      return (
+        <rect
+          key={cx}
+          x={cx - 6.5} y={43} width={13} height={5} rx={2.5} fill={C.ink}
+        />
+      )
+    }
+    return (
+      <g key={cx}>
+        <circle cx={cx} cy={45} r={7} fill={C.ink} />
+        <circle cx={cx + 2.4} cy={42.6} r={2.4} fill={C.white} />
+      </g>
+    )
+  }
+
+  const mouth =
+    mood === 'oops'
+      ? <path d="M 42 66 q 8 -6 16 0" stroke={C.ink} strokeWidth={3.5} strokeLinecap="round" fill="none" />
+      : mood === 'thinking'
+        ? <circle cx={50} cy={64} r={4} fill={C.ink} />
+        : mood === 'proud' || mood === 'happy'
+          ? <path d="M 39 60 q 11 13 22 0 z" fill={C.ink} />
+          : <path d="M 41 61 q 9 8 18 0" stroke={C.ink} strokeWidth={3.5} strokeLinecap="round" fill="none" />
 
   return (
     <motion.svg
+      viewBox="0 0 100 100"
       width={size}
       height={size}
-      viewBox="0 0 120 132"
-      fill="none"
       className={className}
       role="img"
-      aria-label="EduBot mascot"
-      animate={bounce ? { y: [0, -8, 0], rotate: [-3, 3, -3] } : { y: [0, -4, 0] }}
-      transition={{ duration: bounce ? 0.6 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
+      aria-label={`EduBot mascot, ${mood}`}
+      animate={
+        still
+          ? undefined
+          : mood === 'happy' || mood === 'proud'
+            ? { y: [0, -9, 0], rotate: [0, -4, 4, 0] }
+            : mood === 'oops'
+              ? { x: [0, -5, 5, -3, 0] }
+              : { y: [0, -5, 0] }
+      }
+      transition={
+        still
+          ? undefined
+          : mood === 'happy' || mood === 'proud'
+            ? { duration: 0.7, ease: 'easeInOut' }
+            : mood === 'oops'
+              ? { duration: 0.45 }
+              : { duration: 3.2, repeat: Infinity, ease: 'easeInOut' }
+      }
     >
-      {/* antenna */}
-      <motion.g
-        style={{ transformOrigin: '60px 20px' }}
-        animate={{ rotate: [-6, 6, -6] }}
-        transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <line x1="60" y1="20" x2="60" y2="6" stroke="#8B5A2B" strokeWidth="3" strokeLinecap="round" />
-        <circle cx="60" cy="5" r="5" fill="#8FAE7D" />
-      </motion.g>
+      {/* Antenna */}
+      <line x1="50" y1="18" x2="50" y2="26" stroke={bodyColour} strokeWidth={5} strokeLinecap="round" />
+      <motion.circle
+        cx="50" cy="14" r="6" fill={mood === 'thinking' ? C.sun : bodyColour}
+        animate={still || mood !== 'thinking' ? undefined : { scale: [1, 1.28, 1], opacity: [1, 0.6, 1] }}
+        transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+      />
 
-      {/* ears */}
-      <rect x="10" y="46" width="12" height="22" rx="6" fill="#E0A85C" />
-      <rect x="98" y="46" width="12" height="22" rx="6" fill="#E0A85C" />
+      {/* Ears */}
+      <rect x="10" y="46" width="9" height="20" rx="4.5" fill={bodyColour} opacity={0.55} />
+      <rect x="81" y="46" width="9" height="20" rx="4.5" fill={bodyColour} opacity={0.55} />
 
-      {/* head */}
-      <rect x="20" y="22" width="80" height="66" rx="32" fill="#FBF6EA" stroke="#8B5A2B" strokeWidth="3.5" />
+      {/* Head */}
+      <rect x="17" y="26" width="66" height="58" rx="22" fill={bodyColour} />
+      {/* Face plate */}
+      <rect x="24" y="33" width="52" height="44" rx="17" fill={C.white} />
 
-      {/* blush */}
-      <ellipse cx="34" cy="64" rx="7" ry="4.5" fill="#D98F72" opacity="0.55" />
-      <ellipse cx="86" cy="64" rx="7" ry="4.5" fill="#D98F72" opacity="0.55" />
+      {eye(39)}
+      {eye(61)}
+      {mouth}
 
-      {/* eyes */}
-      <motion.g
-        style={{ transformOrigin: '46px 54px' }}
-        animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
-        transition={{ duration: 4.5, repeat: Infinity, times: [0, 0.92, 0.95, 0.98, 1] }}
-      >
-        <circle cx="46" cy="54" r="7" fill="#3A3226" />
-        <circle cx="48" cy="51.5" r="2.2" fill="#FBF6EA" />
-      </motion.g>
-      <motion.g
-        style={{ transformOrigin: '74px 54px' }}
-        animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
-        transition={{ duration: 4.5, repeat: Infinity, times: [0, 0.92, 0.95, 0.98, 1] }}
-      >
-        <circle cx="74" cy="54" r="7" fill="#3A3226" />
-        <circle cx="76" cy="51.5" r="2.2" fill="#FBF6EA" />
-      </motion.g>
-
-      {/* smile */}
-      <path d="M50 70 Q60 78 70 70" stroke="#3A3226" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-
-      {/* body */}
-      <rect x="34" y="92" width="52" height="34" rx="16" fill="#8FAE7D" stroke="#8B5A2B" strokeWidth="3.5" />
-
-      {/* book */}
-      <g transform="translate(45, 100)">
-        <rect x="0" y="0" width="30" height="20" rx="3" fill="#FBF6EA" stroke="#8B5A2B" strokeWidth="2.5" />
-        <line x1="15" y1="1.5" x2="15" y2="18.5" stroke="#8B5A2B" strokeWidth="2" />
-        <line x1="4" y1="6" x2="12" y2="6" stroke="#D98F72" strokeWidth="1.6" strokeLinecap="round" />
-        <line x1="4" y1="11" x2="12" y2="11" stroke="#D98F72" strokeWidth="1.6" strokeLinecap="round" />
-        <line x1="18" y1="6" x2="26" y2="6" stroke="#7FADC2" strokeWidth="1.6" strokeLinecap="round" />
-        <line x1="18" y1="11" x2="26" y2="11" stroke="#7FADC2" strokeWidth="1.6" strokeLinecap="round" />
-      </g>
+      {/* Cheeks — the detail that makes it read as cute rather than technical. */}
+      {(mood === 'happy' || mood === 'proud' || mood === 'idle') && (
+        <>
+          <ellipse cx="31" cy="58" rx="5.5" ry="3.6" fill={C.coral} opacity={0.5} />
+          <ellipse cx="69" cy="58" rx="5.5" ry="3.6" fill={C.coral} opacity={0.5} />
+        </>
+      )}
     </motion.svg>
   )
 }

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -22,6 +22,11 @@ class User(Base):
     total_messages = Column(Integer, default=0)
     quizzes_completed = Column(Integer, default=0)
     streak_days = Column(Integer, default=0)
+    # Distinct days this account has shown up. Only ever grows, so the XP it
+    # earns can never be taken away by a broken streak.
+    login_days = Column(Integer, default=0, server_default="0")
+    last_login_date = Column(Date, nullable=True)
+    longest_streak = Column(Integer, default=0, server_default="0")
     last_active = Column(DateTime(timezone=True), onupdate=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

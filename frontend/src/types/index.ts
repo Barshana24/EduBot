@@ -11,7 +11,24 @@ export interface User {
   total_messages: number
   quizzes_completed: number
   streak_days: number
+  login_days?: number
+  longest_streak?: number
   created_at?: string
+}
+
+export interface DailyReward {
+  awarded: boolean
+  streak_days: number
+  login_days: number
+  xp_awarded: number
+}
+
+export interface LearningResource {
+  kind: 'video' | 'playlist' | 'reference'
+  platform: string
+  title: string
+  blurb: string
+  url: string
 }
 
 export interface AuthState {
@@ -81,6 +98,8 @@ export interface ProgressOverview {
   quizzes_completed: number
   avg_quiz_score: number
   streak_days: number
+  login_days?: number
+  longest_streak?: number
   subject_stats: SubjectStat[]
   recent_activity: RecentActivity[]
   preferred_language: string

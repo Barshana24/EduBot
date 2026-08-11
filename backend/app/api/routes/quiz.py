@@ -3,7 +3,6 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, List
-import json
 import logging
 from datetime import datetime
 
@@ -13,6 +12,7 @@ from app.models.quiz import Quiz, QuizQuestion, FlashCard
 from app.models.user import User
 from app.services.gemini_service import generate_response
 from app.services.pdf_service import generate_quiz_pdf
+from app.core.json_repair import extract_list, is_service_error
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -61,16 +61,20 @@ async def generate_quiz(
         history=[],
     )
 
-    try:
-        json_start = response.find("{")
-        json_end = response.rfind("}") + 1
-        if json_start == -1:
-            raise ValueError("No JSON found in response")
-        quiz_data = json.loads(response[json_start:json_end])
-        questions_data = quiz_data.get("questions", [])
-    except (json.JSONDecodeError, ValueError) as e:
-        logger.error(f"Failed to parse quiz JSON: {e}\nResponse: {response}")
-        raise HTTPException(status_code=500, detail="Failed to generate quiz. Please try again.")
+    # The AI wrapper reports upstream failures as a readable string rather than
+    # raising, so surface that instead of a generic parse failure.
+    if is_service_error(response):
+        logger.warning(f"Quiz generation blocked upstream: {response[:160]}")
+        raise HTTPException(status_code=503, detail=response.strip())
+
+    # Tolerant of a response cut short by the output-token limit: the questions
+    # that arrived complete are kept rather than discarding the whole quiz.
+    questions_data = extract_list(response, "questions")
+    questions_data = [q for q in questions_data if q.get("question") and q.get("options")]
+
+    if not questions_data:
+        logger.error(f"No usable questions in quiz response: {response[:400]}")
+        raise HTTPException(status_code=502, detail="Couldn't build that quiz. Please try again.")
 
     title = f"{payload.subject} Quiz" + (f" - {payload.topic}" if payload.topic else "")
     quiz = Quiz(
@@ -248,14 +252,16 @@ async def generate_flashcards(
         history=[],
     )
 
-    try:
-        json_start = response.find("{")
-        json_end = response.rfind("}") + 1
-        cards_data = json.loads(response[json_start:json_end])
-        cards = cards_data.get("flashcards", [])
-    except (json.JSONDecodeError, ValueError) as e:
-        logger.error(f"Failed to parse flashcard JSON: {e}")
-        raise HTTPException(status_code=500, detail="Failed to generate flashcards. Please try again.")
+    if is_service_error(response):
+        logger.warning(f"Flashcard generation blocked upstream: {response[:160]}")
+        raise HTTPException(status_code=503, detail=response.strip())
+
+    cards = extract_list(response, "flashcards")
+    cards = [c for c in cards if c.get("front") and c.get("back")]
+
+    if not cards:
+        logger.error(f"No usable flashcards in response: {response[:400]}")
+        raise HTTPException(status_code=502, detail="Couldn't build that deck. Please try again.")
 
     saved_cards = []
     for card in cards:

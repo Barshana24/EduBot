@@ -79,7 +79,8 @@ export const useAuthStore = create<AuthStore>()(
 export const useUIStore = create<UIStore>()(
   persist(
     (set) => ({
-      isDarkMode: true,
+      // Bright is the product; dark is the option.
+      isDarkMode: false,
       isSidebarOpen: true,
       isSettingsOpen: false,
       toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
@@ -89,6 +90,10 @@ export const useUIStore = create<UIStore>()(
     {
       name: 'edubot-ui',
       storage: createJSONStorage(() => localStorage),
+      version: 2,
+      // Anyone carrying the old dark-by-default preference gets reset once,
+      // otherwise they'd open the new bright app in dark mode.
+      migrate: (state) => ({ ...(state as UIStore), isDarkMode: false }),
       partialize: (state) => ({ isDarkMode: state.isDarkMode, isSidebarOpen: state.isSidebarOpen }),
     }
   )

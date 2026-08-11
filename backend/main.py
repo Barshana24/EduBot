@@ -12,7 +12,7 @@ from sqlalchemy import text
 
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api.routes import auth, chat, quiz, notes, upload, progress
+from app.api.routes import auth, chat, quiz, notes, upload, progress, resources
 
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL, logging.INFO),
@@ -21,12 +21,31 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+# create_all only creates missing tables, never new columns on existing ones.
+# There is no migration tool in this project, so columns added after the first
+# deploy are applied here. Each statement is idempotent and safe to re-run.
+_COLUMN_MIGRATIONS = [
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS login_days INTEGER DEFAULT 0",
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_date DATE",
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS longest_streak INTEGER DEFAULT 0",
+]
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting EduBot API...")
     with engine.begin() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
     Base.metadata.create_all(bind=engine)
+
+    with engine.begin() as conn:
+        for statement in _COLUMN_MIGRATIONS:
+            try:
+                conn.execute(text(statement))
+            except Exception as e:
+                # A failed add on one column must not stop the app booting.
+                logger.warning("Migration skipped (%s): %s", statement, e)
+
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     logger.info("EduBot API started successfully")
     yield
@@ -62,6 +81,7 @@ app.include_router(quiz.router, prefix="/api/quiz", tags=["Quiz"])
 app.include_router(notes.router, prefix="/api/notes", tags=["Notes"])
 app.include_router(upload.router, prefix="/api/upload", tags=["Upload"])
 app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])
+app.include_router(resources.router, prefix="/api/resources", tags=["Resources"])
 
 
 @app.get("/api/health")

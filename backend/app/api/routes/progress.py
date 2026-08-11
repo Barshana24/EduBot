@@ -67,6 +67,8 @@ async def get_progress_overview(
         "quizzes_completed": len(completed_quizzes),
         "avg_quiz_score": round(avg_quiz_score, 1),
         "streak_days": user.streak_days or 0,
+        "login_days": user.login_days or 0,
+        "longest_streak": user.longest_streak or 0,
         "subject_stats": subject_stats,
         "recent_activity": [
             {
