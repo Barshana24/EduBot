@@ -184,6 +184,4 @@ EduBot/
 3. Make your changes
 4. Submit a PR
 
----
 
-Made with ❤️ for engineering students worldwide.
